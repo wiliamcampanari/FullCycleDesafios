@@ -1,0 +1,19 @@
+FROM golang:1.16-alpine AS builder
+
+#diretório de trabalho dentro do contêiner
+WORKDIR /app
+
+# copiando meus arquivos para o container
+COPY . .
+
+# Compilando o Go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o wcampanari .
+
+# Criando uma nova imagem a partir do scratch
+FROM scratch  
+
+# Copie o executável para a nova imagem
+COPY --from=builder /app/wcampanari /wcampanari
+
+# Execute o programa Go quando o contêiner iniciar
+CMD ["/wcampanari"]
