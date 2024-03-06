@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+    nginx:
+        restart: always
+        build:
+            context: ./nginx
+        networks:
+            desafio02-network:
+                ipv4_address: 172.20.0.2
+        ports:
+            - "8080:80"
+    app:
+        build:
+            context: ./app
+            dockerfile: Dockerfile
+        networks:
+            desafio02-network:
+                ipv4_address: 172.20.0.4
+        ports:        
+            - "3000:3000"
+    db:
+        image: "mysql:5.7"
+        networks:
+            desafio02-network:
+                ipv4_address: 172.20.0.3
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: "password"
+            MYSQL_DATABASE: "fullcycle"
+
+networks:
+    desafio02-network:
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.20.0.0/16
