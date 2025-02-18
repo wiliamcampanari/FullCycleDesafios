@@ -2,37 +2,44 @@ version: "3.8"
 
 services:
     nginx:
-        restart: always
+#        restart: always
+        container_name: fullcycle-nginx
         build:
             context: ./nginx
         networks:
-            desafio02-network:
-                ipv4_address: 172.20.0.2
+            fullcycle-network:
+                ipv4_address: 10.0.0.2
         ports:
             - "8080:80"
+    
     app:
+        container_name: fullcycle-node
         build:
             context: ./app
             dockerfile: Dockerfile
         networks:
-            desafio02-network:
-                ipv4_address: 172.20.0.4
+            fullcycle-network:
+                ipv4_address: 10.0.0.3
         ports:        
-            - "3000:3000"
+            - "3000:3udo a000"
+    
     db:
-        image: "mysql:5.7"
+        image: "mysql:5.7"        
+        container_name: fullcycle-mysql
         networks:
-            desafio02-network:
-                ipv4_address: 172.20.0.3
+            fullcycle-network:
+                ipv4_address: 10.0.0.4
         ports:
             - "3306:3306"
         environment:
             MYSQL_ROOT_PASSWORD: "password"
             MYSQL_DATABASE: "fullcycle"
+            MYSQL_USER: "userDataBase"
+            MYSQL_PASSWORD: "userPasswd"
 
 networks:
-    desafio02-network:
+    fullcycle-network:
         ipam:
             driver: default
             config:
-                - subnet: 172.20.0.0/16
+                - subnet: 10.0.0.0/16
