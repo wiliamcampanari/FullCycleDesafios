@@ -1,19 +1,27 @@
-FROM golang:1.16-alpine AS builder
+# Etapa 1: build estático
+FROM golang:1.22-alpine AS builder
+WORKDIR /src
 
-#diretório de trabalho dentro do contêiner
-WORKDIR /app
+# Dependências mínimas
+RUN apk add --no-cache ca-certificates upx
 
-# copiando meus arquivos para o container
-COPY . .
+# Copia o código
+COPY main.go .
 
-# Compilando o Go
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o wcampanari .
+# Compila estático e reduz tamanho do binário
+# - CGO desabilitado => binário puro
+# -ldflags "-s -w" remove símbolos de debug
+# -trimpath remove paths do build
+ENV CGO_ENABLED=0
+RUN go build -ldflags="-s -w" -trimpath -buildvcs=false -o /out/fullcycle main.go \
+    && ls -lh /out/fullcycle \
+    && upx --best --lzma /out/fullcycle || true \
+    && ls -lh /out/fullcycle
 
-# Criando uma nova imagem a partir do scratch
-FROM scratch  
-
-# Copie o executável para a nova imagem
-COPY --from=builder /app/wcampanari /wcampanari
-
-# Execute o programa Go quando o contêiner iniciar
-CMD ["/wcampanari"]
+# Etapa 2: imagem final "vazia"
+FROM scratch
+# Copia apenas o binário
+COPY --from=builder /out/fullcycle /fullcycle
+# Segurança básica: usuário não-root (opcional)
+USER 65532:65532
+ENTRYPOINT ["/fullcycle"]

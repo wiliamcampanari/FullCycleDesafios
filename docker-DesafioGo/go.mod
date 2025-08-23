@@ -1,3 +1,7 @@
-module hello
+package main
 
-go 1.18
+import "fmt"
+
+func main() {
+	fmt.Println("Full Cycle Rocks!!")
+}
